@@ -6,7 +6,7 @@ import matplotlib.path as path
 from matplotlib.animation import FuncAnimation
 
 # initialize custom parameters
-markersize = int(input("Enter the size of the particles: "))
+markersize = 2
 
 X, Y = 0, 1
 class MDSimulation:

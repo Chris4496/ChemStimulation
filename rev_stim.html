@@ -1,0 +1,280 @@
+<head>
+  <style>
+    .button-31 {
+      background-color: #222;
+      border-radius: 4px;
+      border-style: none;
+      box-sizing: border-box;
+      color: #fff;
+      cursor: pointer;
+      display: inline-block;
+      font-family: "Farfetch Basis", "Helvetica Neue", Arial, sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.5;
+      margin: 0;
+      max-width: none;
+      min-height: 44px;
+      min-width: 10px;
+      outline: none;
+      overflow: hidden;
+      padding: 9px 20px 8px;
+      margin-top: 50px;
+      position: relative;
+      text-align: center;
+      text-transform: none;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      width: 100%;
+    }
+
+    .button-31:hover,
+    .button-31:focus {
+      opacity: 0.75;
+    }
+
+    canvas {
+      padding-left: 0;
+      padding-right: 0;
+      margin-left: auto;
+      margin-right: auto;
+      display: block;
+    }
+
+    html {
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+<h1>Reversible Reaction</h1>
+<canvas id="life" width="650" height="650"></canvas>
+<div style="display: flex; justify-content: space-evenly">
+  <div style="background-color: darkgray; padding: 20px">
+    <h1>N<sub>2</sub> + 3H<sub>2</sub> ⇌ 2NH<sub>3</sub></h1>
+    <h2 style="color: white">Hydrogen Atom</h2>
+    <h2 style="color: blue">Nitrogen Atom</h2>
+  </div>
+  <div>
+    <h1>Hydrogen Atom: 18</h1>
+    <h1>Nitrogen Atom: 6</h1>
+  </div>
+  <div>
+    <div id="separated" style="display: none">
+      <h1>Hydrogen: 9</h1>
+      <h1>Nitrogen: 3</h1>
+      <h1>Amonnia: 0</h1>
+    </div>
+    <div id="combined" style="display: block">
+      <h1>Hydrogen: 0</h1>
+      <h1>Nitrogen: 0</h1>
+      <h1>Amonnia: 6</h1>
+    </div>
+  </div>
+  <div>
+    <button onclick="clickHandler()" class="button-31" id="btn">
+      Increase Temperature
+    </button>
+  </div>
+</div>
+
+<script>
+  width = 650;
+  steps = 0;
+
+  m = document.getElementById("life").getContext("2d");
+
+  drawBackground = (x, y, c, s) => {
+    m.fillStyle = c;
+    m.fillRect(x, y, s, s);
+  };
+
+  drawParticle = (x, y, c, s) => {
+    m.fillStyle = c;
+    m.beginPath();
+    m.arc(x, y, s, 0, 2 * Math.PI);
+    m.fill();
+  };
+
+  atoms = [];
+  atom = (x, y, c, r) => {
+    return { x: x, y: y, vx: 0, vy: 0, color: c, radius: r };
+  };
+
+  random = () => {
+    return Math.random() * (width - 100) + 50;
+  };
+
+  create = (number, color, radius) => {
+    group = [];
+    for (let i = 0; i < number; i++) {
+      group.push(atom(random(), random(), color, radius));
+      atoms.push(group[i]);
+    }
+    return group;
+  };
+
+  rule = (atoms1, atoms2, g, padding, _range = 1000) => {
+    // calculate the distance between two atoms
+    // if the distance is more than its radius, apply the force
+    // if the distance is less than its radius, apply the force in the opposite direction
+    for (let i = 0; i < atoms1.length; i++) {
+      fx = 0;
+      fy = 0;
+      for (let j = 0; j < atoms2.length; j++) {
+        a = atoms1[i];
+        b = atoms2[j];
+        dx = a.x - b.x;
+        dy = a.y - b.y;
+        d = Math.sqrt(dx * dx + dy * dy);
+        if (d > a.radius + padding && d < _range) {
+          F = (g * 1) / d;
+          fx += F * dx;
+          fy += F * dy;
+        }
+      }
+      a.vx = (a.vx + fx) * 0.5;
+      a.vy = (a.vy + fy) * 0.5;
+      a.x += a.vx;
+      a.y += a.vy;
+      if (a.x <= a.radius || a.x >= width - a.radius) {
+        a.vx *= -1;
+      }
+      if (a.y <= a.radius || a.y >= width - a.radius) {
+        a.vy *= -1;
+      }
+      // prevent atoms from leaving the canvas
+      if (a.x < a.radius) {
+        a.x = a.radius;
+      }
+      if (a.x > width - a.radius) {
+        a.x = width - a.radius;
+      }
+      if (a.y < a.radius) {
+        a.y = a.radius;
+      }
+      if (a.y > width - a.radius) {
+        a.y = width - a.radius;
+      }
+    }
+  };
+
+  nitrogen0 = create(1, "blue", 28);
+  hydrogen00 = create(1, "white", 15);
+  hydrogen01 = create(1, "white", 15);
+  hydrogen02 = create(1, "white", 15);
+  hydrogen0 = hydrogen00.concat(hydrogen01, hydrogen02);
+
+  nitrogen1 = create(1, "blue", 28);
+  hydrogen10 = create(1, "white", 15);
+  hydrogen11 = create(1, "white", 15);
+  hydrogen12 = create(1, "white", 15);
+  hydrogen1 = hydrogen10.concat(hydrogen11, hydrogen12);
+
+  nitrogen2 = create(1, "blue", 28);
+  hydrogen20 = create(1, "white", 15);
+  hydrogen21 = create(1, "white", 15);
+  hydrogen22 = create(1, "white", 15);
+  hydrogen2 = hydrogen20.concat(hydrogen21, hydrogen22);
+
+  nitrogen3 = create(1, "blue", 28);
+  hydrogen30 = create(1, "white", 15);
+  hydrogen31 = create(1, "white", 15);
+  hydrogen32 = create(1, "white", 15);
+  hydrogen3 = hydrogen30.concat(hydrogen31, hydrogen32);
+
+  nitrogen4 = create(1, "blue", 28);
+  hydrogen40 = create(1, "white", 15);
+  hydrogen41 = create(1, "white", 15);
+  hydrogen42 = create(1, "white", 15);
+  hydrogen4 = hydrogen40.concat(hydrogen41, hydrogen42);
+
+  nitrogen5 = create(1, "blue", 28);
+  hydrogen50 = create(1, "white", 15);
+  hydrogen51 = create(1, "white", 15);
+  hydrogen52 = create(1, "white", 15);
+  hydrogen5 = hydrogen50.concat(hydrogen51, hydrogen52);
+
+  noise = create(90, "rgba(255, 255, 255, 0)", 1);
+
+  nitrogen = nitrogen0.concat(
+    nitrogen1,
+    nitrogen2,
+    nitrogen3,
+    nitrogen4,
+    nitrogen5
+  );
+  hydrogen = hydrogen0.concat(
+    hydrogen1,
+    hydrogen2,
+    hydrogen3,
+    hydrogen4,
+    hydrogen5
+  );
+
+  combined = true;
+  update = () => {
+    // steps++;
+
+    rule(nitrogen, nitrogen, 2.7, 0, 250);
+    rule(hydrogen, hydrogen, 1.2, 0, 100);
+    rule(nitrogen, noise, -0.35, 0, 200);
+    rule(hydrogen, noise, -0.25, 0, 200);
+    rule(noise, noise, 10, 0, 150);
+
+    if (combined) {
+      rule(hydrogen0, nitrogen0, -4, 20);
+      rule(hydrogen1, nitrogen1, -4, 20);
+      rule(hydrogen2, nitrogen2, -4, 20);
+      rule(hydrogen3, nitrogen3, -4, 20);
+      rule(hydrogen4, nitrogen4, -4, 20);
+      rule(hydrogen5, nitrogen5, -4, 20);
+    } else {
+      rule(hydrogen00, hydrogen52, -2.7, 10);
+      rule(hydrogen02, hydrogen21, -2.7, 10);
+      rule(hydrogen11, hydrogen01, -2.7, 10);
+      rule(hydrogen20, hydrogen12, -2.7, 10);
+      rule(hydrogen22, hydrogen30, -2.7, 10);
+      rule(hydrogen31, hydrogen41, -2.7, 10);
+      rule(hydrogen40, hydrogen32, -2.7, 10);
+      rule(hydrogen42, hydrogen50, -2.7, 10);
+      rule(hydrogen51, hydrogen10, -2.7, 10);
+
+      rule(nitrogen0, nitrogen1, -6, 15);
+      rule(nitrogen2, nitrogen3, -6, 15);
+      rule(nitrogen4, nitrogen5, -6, 15);
+
+      rule(nitrogen, hydrogen, -0.1, 50);
+      rule(hydrogen, nitrogen, -0.1, 50);
+    }
+
+    // if (steps % 600 == 0) {
+    //   combined = !combined;
+    // }
+
+    m.clearRect(0, 0, width, width);
+    drawBackground(0, 0, "black", width);
+    for (i = 0; i < atoms.length; i++) {
+      drawParticle(atoms[i].x, atoms[i].y, atoms[i].color, atoms[i].radius);
+    }
+    requestAnimationFrame(update);
+  };
+
+  clickHandler = () => {
+    combined = !combined;
+    // set display to none for combined
+    // set display to block for separated
+    document.getElementById("combined").style.display = combined
+      ? "block"
+      : "none";
+    document.getElementById("separated").style.display = combined
+      ? "none"
+      : "block";
+
+    document.getElementById("btn").innerHTML = combined
+      ? "Increase Temperature"
+      : "Increase Pressure";
+  };
+
+  update();
+</script>
