@@ -6,7 +6,7 @@ import matplotlib.path as path
 from matplotlib.animation import FuncAnimation
 
 # initialize custom parameters
-markersize = 2
+markersize = 5
 
 X, Y = 0, 1
 class MDSimulation:
@@ -60,17 +60,17 @@ class MDSimulation:
         self.vel[hit_bottom_wall | hit_top_wall, Y] *= -1
 
 # Number of particles.
-n = 1000
+n = 350
 # Scaling factor for distance, m-1. The box dimension is therefore 1/rscale.
-rscale = 5.e6
-# Use the van der Waals radius of Ar, about 0.188 nm.
-r = 1.88e-10 * rscale
+rscale = 1e6
+# Use the van der Waals radius of Ar, about 0.2 nm.
+r = 5e-9 * rscale
 # Scale time by this factor, in s-1.
-tscale = 1e10    # i.e. time will be measured in picoseconds.
+tscale = 1e9    # i.e. time will be measured in nanoseconds.
 # Take the mean speed to be the root-mean-square velocity of Ar at 300 K.
 sbar = 353 * rscale / tscale
 # Time step in scaled time units.
-FPS = 30
+FPS = 60
 dt = 1/FPS
 # Particle masses, scaled by some factor we're not using yet.
 m = 1
@@ -159,7 +159,7 @@ def get_KE(speeds):
     return 0.5 * sim.m * sum(speeds**2)
 
 speeds = get_speeds(sim.vel)
-speed_hist = Histogram(speeds, 2 * sbar, 50, density=True)
+speed_hist = Histogram(speeds, 2 * sbar, 100, density=True)
 speed_hist.draw(speed_ax)
 speed_ax.set_xlim(speed_hist.left[0], speed_hist.right[-1])
 # TODO don't hardcode the upper limit for the histogram speed axis.
