@@ -6,7 +6,7 @@ import matplotlib.path as path
 from matplotlib.animation import FuncAnimation
 
 # initialize custom parameters
-markersize = 5
+markersize = 4
 
 X, Y = 0, 1
 class MDSimulation:
@@ -70,7 +70,7 @@ tscale = 1e9    # i.e. time will be measured in nanoseconds.
 # Take the mean speed to be the root-mean-square velocity of Ar at 300 K.
 sbar = 353 * rscale / tscale
 # Time step in scaled time units.
-FPS = 60
+FPS = 20
 dt = 1/FPS
 # Particle masses, scaled by some factor we're not using yet.
 m = 1
@@ -98,7 +98,7 @@ for spine in sim_ax.spines.values():
     spine.set_linewidth(2)
 
 speed_ax = fig.add_subplot(122)
-speed_ax.set_xlabel('Knetic Energy (K)')
+speed_ax.set_xlabel('Knetic Energy (KE)')
 speed_ax.set_ylabel('Number Of Particles')
 
 particles, = sim_ax.plot([], [], 'ko')
@@ -159,7 +159,7 @@ def get_KE(speeds):
     return 0.5 * sim.m * sum(speeds**2)
 
 speeds = get_speeds(sim.vel)
-speed_hist = Histogram(speeds, 2 * sbar, 100, density=True)
+speed_hist = Histogram(speeds, 2 * sbar, 50, density=1)
 speed_hist.draw(speed_ax)
 speed_ax.set_xlim(speed_hist.left[0], speed_hist.right[-1])
 # TODO don't hardcode the upper limit for the histogram speed axis.
@@ -177,10 +177,10 @@ a = sim.m / 2 / mean_KE
 # looks smooth.
 sgrid_hi = np.linspace(0, speed_hist.bins[-1], 200)
 f = 2 * a * sgrid_hi * np.exp(-a * sgrid_hi**2)
-# mb_line, = speed_ax.plot(sgrid_hi, f, c='0.7')
+mb_line, = speed_ax.plot(sgrid_hi, f, c='0.7')
 # Maximum value of the 2D Maxwell-Boltzmann speed distribution.
 fmax = np.sqrt(sim.m / mean_KE / np.e)
-speed_ax.set_ylim(0, fmax)
+speed_ax.set_ylim(0, fmax+0.6)
 
 # For the distribution derived by averaging, take the abcissa speed points from
 # the centre of the histogram bars.
@@ -190,7 +190,7 @@ mb_est = np.zeros(len(sgrid))
 
 # A text label indicating the time and step number for each animation frame.
 xlabel, ylabel = sgrid[-1] / 2, 0.8 * fmax
-label = speed_ax.text(xlabel, ylabel, '$t$ = {:.1f}s, step = {:d}'.format(0, 0),
+label = speed_ax.text(xlabel, ylabel, '$t$ = {:.1f} ns, step = {:d}\navg. KE = {:1f}, highest KE = {:1f}'.format(0, 0, 0, 0),
                       backgroundcolor='w')
 
 def init_anim():
@@ -210,6 +210,15 @@ def animate(i):
     speeds = get_speeds(sim.vel)
     speed_hist.update(speeds)
 
+    mean_KE = get_KE(speeds) / n
+
+    highest_KE = np.max(get_KE(speeds))
+
+    a = sim.m / 2 / mean_KE
+
+    mu = a*2*np.sqrt(2/np.pi)
+
+
     # Once the simulation has approached equilibrium a bit, start averaging
     # the speed distribution to indicate the approximation to the Maxwell-
     # Boltzmann distribution.
@@ -217,7 +226,7 @@ def animate(i):
         mb_est += (speed_hist.hist - mb_est) / (i - IAV_START + 1)
         mb_est_line.set_data(sgrid, mb_est)
 
-    label.set_text('$t$ = {:.1f} ps, step = {:d}'.format(i*dt, i))
+    label.set_text('$t$ = {:.1f} ns, step = {:d}\navg. KE = {:.5f}'.format(i*dt, i, mu*5.3))
 
     return particles, speed_hist.patch, mb_est_line, label
 
